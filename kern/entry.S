@@ -41,7 +41,7 @@ _start = RELOC(entry)
 
 .globl entry
 entry:
-	movw	$0x1234,0x472			# warm boot
+	movw	$0x1234,0x472			# warm boot On standard x86 PCs address 0x472 controls whether or not one does a cold or warm reboot. By writing 0x1234 to this address, the BIOS should do a warm reboot, and if zero is written to this address a cold reboot will occur.
 
 	# We haven't set up virtual memory yet, so we're running from
 	# the physical address the boot loader loaded the kernel at: 1MB
@@ -58,23 +58,23 @@ entry:
 	movl	%eax, %cr3
 	# Turn on paging.
 	movl	%cr0, %eax
-	orl	$(CR0_PE|CR0_PG|CR0_WP), %eax
+	orl	$(CR0_PE|CR0_PG|CR0_WP), %eax # 0x80001001
 	movl	%eax, %cr0
 
 	# Now paging is enabled, but we're still running at a low EIP
 	# (why is this okay?).  Jump up above KERNBASE before entering
 	# C code.
-	mov	$relocated, %eax
+	mov	$relocated, %eax    #relocated address: 0xf010002f,%eax
 	jmp	*%eax
 relocated:
 
 	# Clear the frame pointer register (EBP)
 	# so that once we get into debugging C code,
 	# stack backtraces will be terminated properly.
-	movl	$0x0,%ebp			# nuke frame pointer
+	movl	$0x0,%ebp			# nuke frame pointer #Code Breaks if paging is not enabled.
 
 	# Set the stack pointer
-	movl	$(bootstacktop),%esp
+	movl	$(bootstacktop),%esp  
 
 	# now to C code
 	call	i386_init
