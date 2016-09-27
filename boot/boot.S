@@ -45,7 +45,7 @@ seta20.2:
   # and segment translation that makes virtual addresses 
   # identical to their physical addresses, so that the 
   # effective memory map does not change during the switch.
-  lgdt    gdtdesc
+  lgdt    gdtdesc  # gdtdesc address =  0x7c64
   movl    %cr0, %eax
   orl     $CR0_PE_ON, %eax
   movl    %eax, %cr0
@@ -65,8 +65,8 @@ protcseg:
   movw    %ax, %ss                # -> SS: Stack Segment
   
   # Set up the stack pointer and call into C.
-  movl    $start, %esp
-  call bootmain
+  movl    $start, %esp #start address is:0x7c00
+  call bootmain    # bootmain() address: 0x7d08
 
   # If bootmain returns (it shouldn't), loop.
 spin:
