@@ -175,7 +175,7 @@ mem_init(void)
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
 	// LAB 3: Your code here.
-
+	envs = (struct Env * )boot_alloc(NENV*sizeof(struct Env));
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
 	// up the list of free physical pages. Once we've done so, all further
@@ -209,7 +209,10 @@ mem_init(void)
 	//    - the new image at UENVS  -- kernel R, user R
 	//    - envs itself -- kernel RW, user NONE
 	// LAB 3: Your code here.
-
+	n = ROUNDUP(NENV*sizeof(struct Env), PGSIZE);
+	//cprintf("\nValue n for envs:%d\nvalue of NENV:%d\nSize of ENV struct:%d\nUNVS:%x\nAddition n+UENV:%x",n,NENV,sizeof(struct Env),UENVS,n+UENVS);
+	boot_map_region(kern_pgdir, UENVS, n, PADDR(envs), PTE_U | PTE_P);
+	//boot_map_region(kern_pgdir, (uintptr_t)envs, n, PADDR(envs), PTE_W | PTE_P);
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
 	// stack.  The kernel stack grows down from virtual address KSTACKTOP.
@@ -234,7 +237,7 @@ mem_init(void)
 	// Your code goes here:
 	//boot_map_region(kern_pgdir, KERNBASE, npages*PGSIZE, PADDR((void*)KERNBASE), PTE_W | PTE_P); //npages*PGSIZE
 	//cprintf("Size:%x",(ROUNDUP(0xffffffff-0xf0000000,PGSIZE)));
-	boot_map_region(kern_pgdir, KERNBASE, ROUNDUP(0xffffffff-0xf0000000,PGSIZE), 0, PTE_W | PTE_P);
+	boot_map_region(kern_pgdir, KERNBASE, 0xffffffff-0xf0000000, 0, PTE_W | PTE_P);
 	
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -480,9 +483,9 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
-	//cprintf("\nVA:%x, PA:%x, size:%u",va,pa,size);
+	//cprintf("\nVA:%x, PA:%x, size:%x",va,pa,size);
 	uintptr_t tmpVa = va+size; 
-	
+	//cprintf("\ntmpVA:%x",tmpVa);
 	if(tmpVa < va)
 		panic("\ntmpVa is greater than 32 bits");
 	//cprintf("\nVA:%x, PA:%x, tmpVa:%x",va,pa,tmpVa);
@@ -659,8 +662,24 @@ static uintptr_t user_mem_check_addr;
 int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
-	// LAB 3: Your code here.
+	uintptr_t begin = (uintptr_t)va;
+	uintptr_t limit = begin + len;
 
+	pte_t * pte;
+	
+	limit = ROUNDUP(limit, PGSIZE);
+	
+	for(; begin<limit; begin+=PGSIZE)
+	{
+		pte = pgdir_walk(env->env_pgdir, (void *) begin, false);
+		if (!pte || begin > ULIM || !(*pte & perm)) 
+		{			
+			user_mem_check_addr = (uintptr_t) begin;
+			return -E_FAULT;
+		}
+		begin = ROUNDDOWN(begin, PGSIZE);
+	}
+	
 	return 0;
 }
 

@@ -131,25 +131,35 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 		stab_end = __STAB_END__;
 		stabstr = __STABSTR_BEGIN__;
 		stabstr_end = __STABSTR_END__;
-	} else {
+	} 
+	else 
+	{
 		// The user-application linker script, user/user.ld,
 		// puts information about the application's stabs (equivalent
 		// to __STAB_BEGIN__, __STAB_END__, __STABSTR_BEGIN__, and
 		// __STABSTR_END__) in a structure located at virtual address
 		// USTABDATA.
 		const struct UserStabData *usd = (const struct UserStabData *) USTABDATA;
-
+		
 		// Make sure this memory is valid.
 		// Return -1 if it is not.  Hint: Call user_mem_check.
 		// LAB 3: Your code here.
-
+		int r = user_mem_check(curenv, (void *)usd, sizeof(struct UserStabData), PTE_U | PTE_P);
+		if(r < 0)
+			return -1;
 		stabs = usd->stabs;
 		stab_end = usd->stab_end;
 		stabstr = usd->stabstr;
 		stabstr_end = usd->stabstr_end;
-
+		r = user_mem_check(curenv, (void *)stabs, (stab_end - stabs), PTE_U | PTE_P);
+		if(r < 0)
+			return -1;
+		r = user_mem_check(curenv, (void *)stabstr, (stabstr_end - stabstr), PTE_U | PTE_P);
+		if(r < 0)
+			return -1;
 		// Make sure the STABS and string table memory is valid.
 		// LAB 3: Your code here.
+		
 	}
 
 	// String table validity checks
