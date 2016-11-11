@@ -29,7 +29,60 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	//cprintf("\n%x",thiscpu->cpu_env);
 
+	int i =0;
+	if(curenv == NULL)
+	{
+		
+		for(i =0;i<NENV;i++)
+		{
+			if(envs[i].env_status == ENV_RUNNABLE)
+			{
+				//cprintf("\nValue of I:%d",i);
+				env_run(&envs[i]);
+			}
+		}
+	}
+	else
+	{
+		envid_t id = curenv->env_id;
+		int location = ENVX(id);
+		int end = NENV;
+		//cprintf("\nId in else:%d\n",location);
+		i = location;
+		//for(i=location;i<end;i++)
+		while(i < end)
+		{
+			
+			if(envs[i].env_status == ENV_RUNNABLE)
+			{
+				//cprintf("\nStatus of ENV 0: %d",envs[0].env_status);
+				//cprintf("\nIn normal i:%d\n",i);
+				env_run(&envs[i]);
+			}
+			if(i==NENV-1)
+			{
+				//cprintf("\nIn loop over,location=%d,i:%d",location,i);
+				end = location;
+				i=0;
+				continue;
+			}	
+			i++;
+		}
+
+		//cprintf("\nIn else of scheduler");
+	}
+	if(curenv != NULL)
+	{
+		if(curenv->env_status == ENV_RUNNING)
+		{
+			env_run(curenv);
+		}	
+	}
+	
+	//int i = thiscpu->cpu_env->env_id;
+	//cprintf("\nValue of i is:%d",i);
 	// sched_halt never returns
 	sched_halt();
 }
