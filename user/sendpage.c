@@ -16,8 +16,11 @@ umain(int argc, char **argv)
 
 	if ((who = fork()) == 0) {
 		// Child
+
 		ipc_recv(&who, TEMP_ADDR_CHILD, 0);
+		cprintf("%x: Value of TEMP_ADDR_CHILD\n",TEMP_ADDR_CHILD);
 		cprintf("%x got message: %s\n", who, TEMP_ADDR_CHILD);
+		//cprintf("I am Here after page fault\n");
 		if (strncmp(TEMP_ADDR_CHILD, str1, strlen(str1)) == 0)
 			cprintf("child received correct message\n");
 

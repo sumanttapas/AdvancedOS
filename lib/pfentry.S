@@ -65,18 +65,51 @@ _pgfault_upcall:
 	// ways as registers become unavailable as scratch space.
 	//
 	// LAB 4: Your code here.
+	movl 0x28(%esp),%eax // eax holds the value of trap time eip as we set in the uXtrapframe.
+
+	movl %esp, %ebp //save the current esp in ebp as we are now going to modify the esp to the traptime esp value.
+
+	movl 0x30(%esp),%esp
+
+	pushl %eax   //Push the trap time eip to the traptime stack.
+
+	//update the trap time esp value in the trapframe with the value updatyed by the pushl instruction.
+
+	movl %esp, 0x30(%ebp)
+
+	//restore the esp to the exception esp in UXSTACKTOP
+
+	movl %ebp, %esp
 
 	// Restore the trap-time registers.  After you do this, you
 	// can no longer modify any general-purpose registers.
 	// LAB 4: Your code here.
+
+	//the fault va and err does not matter really. Hence we ingnore those registers
+	popl %eax //fault_va
+	popl %eax //err
+
+	popal //Restore all the register values. Do not touch the general purpose registers now as they hold their pre trap values.
 
 	// Restore eflags from the stack.  After you do this, you can
 	// no longer use arithmetic operations or anything else that
 	// modifies eflags.
 	// LAB 4: Your code here.
 
+	//the next register in the utrapframe is eip, we should not change eip register unless we have finsihed all the processing of the 
+	//trapframe. hence add 4 to the esp to skip the eip. The ret instruction will safely change the eip register value.
+
+	addl $0x4, %esp
+
+	//restore the eflags register.
+
+	popfl 
+
 	// Switch back to the adjusted trap-time stack.
 	// LAB 4: Your code here.
 
+	popl %esp
+
 	// Return to re-execute the instruction that faulted.
 	// LAB 4: Your code here.
+	ret

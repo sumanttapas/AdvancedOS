@@ -20,4 +20,12 @@ void print_trapframe(struct Trapframe *tf);
 void page_fault_handler(struct Trapframe *);
 void backtrace(struct Trapframe *);
 
+static __inline uint32_t
+read_eax(void)
+{
+	uint32_t eax;
+	__asm __volatile("movl %%eax,%0" : "=r" (eax));
+	return eax;
+}
+
 #endif /* JOS_KERN_TRAP_H */
