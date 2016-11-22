@@ -22,6 +22,7 @@ umain(int argc, char **argv)
 		char *buf;
 
 		buf = readline("Type a line: ");
+		cprintf("\nreading line done\n");
 		if (buf != NULL)
 			fprintf(1, "%s\n", buf);
 		else

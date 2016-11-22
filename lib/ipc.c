@@ -72,26 +72,16 @@ ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 	//we have to call sys_ipc_try_send to the to_env environment.
 	int r = 100;
 	if(pg == NULL)
-	{
-		while(r != 0)
-		{
-			r = sys_ipc_try_send(to_env, val, (void *)0xF0000000, 0);	
-			if(r != -E_IPC_NOT_RECV && r !=0)
-				panic("The destination environment is not receiving. Error:%e\n",r);
-			sys_yield();
-		}
-		
+	{	
+		pg = (void *)0xF0000000	;
 	}
-	else
+	
+	while(r != 0)
 	{
-		cprintf("Pg has value in ipc_send:%x\n",pg);
-		while(r != 0)
-		{
-			r = sys_ipc_try_send(to_env, val, pg, perm);	
-			if(r != -E_IPC_NOT_RECV && r !=0)
-				panic("The destination environment is not receiving. Error:%e\n",r);
-			sys_yield();
-		}
+		r = sys_ipc_try_send(to_env, val,pg, perm);	
+		if(r != -E_IPC_NOT_RECV && r !=0)
+			panic("ipc_send. Error:%e\n",r);
+		sys_yield();
 	}
 		
 	//panic("ipc_send not implemented");

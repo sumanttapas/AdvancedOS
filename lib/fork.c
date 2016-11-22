@@ -100,7 +100,12 @@ duppage(envid_t envid, unsigned pn)
 	uint32_t addr = pn*PGSIZE;
 	
 	uint32_t pgnum = PGNUM(addr);
-	if(uvpt[pgnum] & PTE_W || uvpt[pgnum] & PTE_COW)
+	if (uvpt[pn] & PTE_SHARE) 
+	{
+		if ((r = sys_page_map(0, (void *) addr, envid, (void *) addr, uvpt[pn] & PTE_SYSCALL)) < 0)
+			panic("sys_page_map: %e\n", r);
+	}
+	else if(uvpt[pgnum] & PTE_W || uvpt[pgnum] & PTE_COW)
 	{
 		//cprintf("\nPage is COW and Write");
 		if ((r = sys_page_map(0, (void *)addr, envid, (void *)addr, PTE_P|PTE_U|PTE_COW)) < 0)
