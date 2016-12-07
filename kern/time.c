@@ -1,26 +1,32 @@
 #include <kern/time.h>
 #include <inc/assert.h>
+#include <kern/cpu.h>
 
-static unsigned int ticks;
+static unsigned int ticks[NCPU];
 
 void
 time_init(void)
 {
-	ticks = 0;
+	int i;
+	for (i = 0; i < NCPU; ++i)
+	{
+		ticks[i] = 0;
+	}
+	//ticks = 0;
 }
 
 // This should be called once per timer interrupt.  A timer interrupt
 // fires every 10 ms.
 void
-time_tick(void)
+time_tick(int cpunum)
 {
-	ticks++;
-	if (ticks * 10 < ticks)
+	ticks[cpunum]++;
+	if (ticks[cpunum] * 10 < ticks[cpunum])
 		panic("time_tick: time overflowed");
 }
 
 unsigned int
-time_msec(void)
+time_msec(cpunum)
 {
-	return ticks * 10;
+	return ticks[cpunum] * 10;
 }

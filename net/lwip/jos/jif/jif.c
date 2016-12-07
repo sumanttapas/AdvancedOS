@@ -227,8 +227,8 @@ jif_init(struct netif *netif)
     jif = mem_malloc(sizeof(struct jif));
 
     if (jif == NULL) {
-	LWIP_DEBUGF(NETIF_DEBUG, ("jif_init: out of memory\n"));
-	return ERR_MEM;
+    	LWIP_DEBUGF(NETIF_DEBUG, ("jif_init: out of memory\n"));
+    	return ERR_MEM;
     }
 
     output_envid = (envid_t *)netif->state;

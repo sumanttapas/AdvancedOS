@@ -25,7 +25,8 @@ enum {
 	E_FILE_EXISTS	,	// File already exists
 	E_NOT_EXEC	,	// File not a valid executable
 	E_NOT_SUPP	,	// Operation not supported
-
+	E_BUFFER_FULL, //Transmit desc buffer full
+	E_NO_PACKETS,
 	MAXERROR
 };
 

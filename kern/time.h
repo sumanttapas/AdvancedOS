@@ -5,7 +5,7 @@
 #endif
 
 void time_init(void);
-void time_tick(void);
-unsigned int time_msec(void);
+void time_tick(int);
+unsigned int time_msec(int);
 
 #endif /* JOS_KERN_TIME_H */

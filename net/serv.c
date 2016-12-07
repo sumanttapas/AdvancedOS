@@ -141,7 +141,7 @@ serve_init(uint32_t ipaddr, uint32_t netmask, uint32_t gw)
 	lwip_core_unlock();
 	thread_wait(&done, 0, (uint32_t)~0);
 	lwip_core_lock();
-
+	cprintf("output_envid:%x\n",output_envid);
 	lwip_init(&nif, &output_envid, ipaddr, netmask, gw);
 
 	start_timer(&t_arp, &etharp_tmr, "arp timer", ARP_TMR_INTERVAL);
@@ -320,33 +320,41 @@ umain(int argc, char **argv)
 
 	// fork off the timer thread which will send us periodic messages
 	timer_envid = fork();
+	
 	if (timer_envid < 0)
 		panic("error forking");
 	else if (timer_envid == 0) {
+		
 		timer(ns_envid, TIMER_INTERVAL);
 		return;
 	}
-
+	//cprintf("timer ENV: %x\nThisENV:%x\n",timer_envid,thisenv->env_id);
 	// fork off the input thread which will poll the NIC driver for input
 	// packets
 	input_envid = fork();
+	
 	if (input_envid < 0)
 		panic("error forking");
 	else if (input_envid == 0) {
+		
 		input(ns_envid);
 		return;
 	}
-
+	//cprintf("input ENV: %x\nThisENV:%x\n",input_envid,thisenv->env_id);
 	// fork off the output thread that will send the packets to the NIC
 	// driver
 	output_envid = fork();
+	
 	if (output_envid < 0)
 		panic("error forking");
 	else if (output_envid == 0) {
+		
 		output(ns_envid);
 		return;
 	}
-
+	const volatile struct Env * e = &envs[ENVX(output_envid)];
+	cprintf("env_status:%d\nenvid:%x\n",e->env_status, e->env_id);
+	//cprintf("output ENV: %x\nThisENV:%x\n",output_envid,thisenv->env_id);
 	// lwIP requires a user threading library; start the library and jump
 	// into a thread to continue initialization.
 	thread_init();

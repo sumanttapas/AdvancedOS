@@ -19,6 +19,7 @@ nsipc(unsigned type)
 	static envid_t nsenv;
 	if (nsenv == 0)
 		nsenv = ipc_find_env(ENV_TYPE_NS);
+	
 
 	static_assert(sizeof(nsipcbuf) == PGSIZE);
 
