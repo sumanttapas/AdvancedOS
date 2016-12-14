@@ -474,15 +474,15 @@ sys_time_msec(void)
 static int
 sys_e1000_transmit(void * packet, size_t length)
 {
-	user_mem_assert(curenv, (void *)packet, length, PTE_U);
+	user_mem_assert(curenv, (void *)packet, length, PTE_U|PTE_P|PTE_W);
 	return e1000transmit(packet, length);
 }
 
 static int
 sys_e1000_receive(void * packet, size_t * length)
 {
-	user_mem_assert(curenv, (void *)packet, 2048, PTE_U);
-	user_mem_assert(curenv, (void *)length, sizeof(size_t *), PTE_U);
+	user_mem_assert(curenv, (void *)packet, 2048, PTE_U|PTE_P|PTE_W);
+	user_mem_assert(curenv, (void *)length, sizeof(size_t *), PTE_U|PTE_P|PTE_W);
 	return e1000receive(packet, length);
 }
 
