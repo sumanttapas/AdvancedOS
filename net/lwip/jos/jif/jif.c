@@ -96,10 +96,10 @@ low_level_output(struct netif *netif, struct pbuf *p)
 	   time. The size of the data in each pbuf is kept in the ->len
 	   variable. */
 
-	if (txsize + q->len > 2000)
-	    panic("oversized packet, fragment %d txsize %d\n", q->len, txsize);
-	memcpy(&txbuf[txsize], q->payload, q->len);
-	txsize += q->len;
+    	if (txsize + q->len > 2000)
+    	    panic("oversized packet, fragment %d txsize %d\n", q->len, txsize);
+    	memcpy(&txbuf[txsize], q->payload, q->len);
+    	txsize += q->len;
     }
 
     pkt->jp_len = txsize;

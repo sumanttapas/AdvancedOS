@@ -129,7 +129,7 @@ int attachE100(struct pci_func *pcif)
 	}
 
 	//set the Receive part of the E1000 NIC.
-	e1000w(E1000_RAL,0x12005452);     //52:54:00:12:34:56
+	e1000w(E1000_RAL,0x12005452);     //52:54:00:12:34:56 RAL := 0x12005452;
 	e1000w(E1000_RAH, 0x80005634);   //Be sure to be carefull about the byte order.
 	for(i = 0; i < MTA_LEN; i++)
 		e1000w(E1000_MTA+i, 0x00000000);   //Set the MTA to '0'.
@@ -138,7 +138,7 @@ int attachE100(struct pci_func *pcif)
 	e1000w(E1000_RDLEN, sizeof(struct rx_desc) * NUMBERRXDESC);
 	
 	e1000w(E1000_RDH, 0x00000000);
-	e1000w(E1000_RDT, NUMBERRXDESC-1);
+	e1000w(E1000_RDT, NUMBERRXDESC-1); //Consider 128 as the value.
 
 	//e1000w(E1000_IMS, E1000_IMS_RXT0);
 	e1000w(E1000_RCTL, 0x00000000);
@@ -153,8 +153,6 @@ int attachE100(struct pci_func *pcif)
 		rx_queue[i].addr = PADDR(&rx_pkt_buf[i]); 	// set packet buffer to each addr
 		memset(&rx_pkt_buf[i],0,PKTBUFSIZE); 
 	}
-
-
 	return 0;
 }
 
@@ -170,7 +168,7 @@ int e1000transmit(void * packet, size_t length)
 	if((tx_queue[pos].status & E1000_TXD_DD) != 1 )
 		return -E_BUFFER_FULL;
 	
-	memmove((void *) &tx_pkt_buf[pos], (void *)packet, length);
+	memmove((void *) &tx_pkt_buf[pos], (void *)packet, length); //overhead
 	
 	tx_queue[pos].status &= ~E1000_TXD_DD; //set the DD flag to zero.
 	
@@ -178,13 +176,13 @@ int e1000transmit(void * packet, size_t length)
 	
 	tx_queue[pos].length = length;
 		
-	e1000w(E1000_TDT, (pos+1)%NUMBERTXDESC);
+	e1000w(E1000_TDT, (pos+1)%NUMBERTXDESC); //notifies E1000 that a new packet is in the TX descriptor queue.
 	return 0;
 }
 
 int e1000receive(void * pkt, size_t * length)
 {
-	int i = e1000r(E1000_RDT);
+	int i = e1000r(E1000_RDT); 
 	int desc_id = (i+1) % NUMBERRXDESC;
 	//cprintf("status: %x\n",rx_queue[desc_id].status);
 	//cprintf("Desc_id:%d  pkt:%x  buf:%x\n",desc_id,pkt,&rx_pkt_buf[desc_id]);
@@ -204,7 +202,7 @@ int e1000receive(void * pkt, size_t * length)
 		panic("In receive. Not end of packet");	
 	
 	memmove((void *)pkt, (void *)&rx_pkt_buf[desc_id], rx_queue[desc_id].length);
-	rx_queue[desc_id].status = 0x0;
+	//rx_queue[desc_id].status = 0x0;
 	rx_queue[desc_id].status &= ~E1000_RXD_STAT_DD;
 	rx_queue[desc_id].status &= ~E1000_RXD_STAT_EOP;
 	*length = rx_queue[desc_id].length;
@@ -212,6 +210,4 @@ int e1000receive(void * pkt, size_t * length)
 	e1000w(E1000_RDT, desc_id);
 	//e1000w(E1000_RDT, (desc_id+1)%NUMBERRXDESC);
 	return 0;
-	
-	
 }

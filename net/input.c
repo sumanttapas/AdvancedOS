@@ -13,7 +13,7 @@ input(envid_t ns_envid)
 	// Hint: When you IPC a page to the network server, it will be
 	// reading from it for a while, so don't immediately receive
 	// another packet in to the same physical page.
-	int r, perm,i = 0;
+	int r, perm;
 	perm = PTE_P|PTE_U|PTE_W;
 	size_t length;
 	char temppacket[PKTBUFSIZE];
@@ -23,7 +23,7 @@ input(envid_t ns_envid)
 		{
 			;//cprintf("Stuck in loop  R:%e\n",r);
 		}
-		i++;
+		//i++;
 		//cprintf("char buffer:%s",temppacket);
 		if((r = sys_page_alloc(0, &nsipcbuf, perm)) < 0)
 			panic("Not enough memory, error:%e",r);
